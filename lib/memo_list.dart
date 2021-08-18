@@ -1,59 +1,74 @@
-import 'package:flutter/material.dart';
-import 'package:memo_app/memo_list_view_model.dart';
-import 'package:provider/provider.dart';
+import 'dart:ui';
 
-import 'memo_detail.dart';
+import 'package:flutter/material.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
+import 'memo_register.dart';
 
 class MemoList extends StatelessWidget{
+
+Future<List> queryDB(tableName) async {//必ずopenDatabaseをしてDatabaseインスタンスを作る。そのインスタンスでqueryなどをする
+  final db = await openDatabase(
+      join(await getDatabasesPath(), 'memo.db'),
+      version: 1,
+      onCreate: (db, version){
+        return db.execute(''
+            'CREATE TABLE memo(title INTEGER, memo TEXT)'
+        );
+      }
+  );
+
+  final table = await db.query(tableName);//dbがDatabaseでなくfutureだとエラーがでる
+  return table;
+}
+
   @override
   Widget build(BuildContext context) {
-    //final vm = MemoListViewModel(MemoRepository(AppDatabase()))
 
-    return ChangeNotifierProvider(
-      create: (_) => MemoListViewModel(),
-      child: Scaffold(
-        appBar: AppBar(
-          ///AppBarにTextFieldを設置することで，検索バーを作れる
-          title: TextField(
-            style: const TextStyle(
-              color: Colors.white,
-              backgroundColor: Colors.greenAccent
-            ),
-            decoration: InputDecoration(
-              prefixIcon: Icon(Icons.search, color: Colors.white),
-              hintText: 'タイトルを検索',
-              hintStyle: const TextStyle(color: Colors.white)
-            ),
-            //onChanged: (value) => vm.search(value),
-          ),
-        ),
-        backgroundColor: Color(0xffF2F2F2),
-        body: ListView.builder(
-          itemCount: 3 /*vm.memos.length*/,
-          itemBuilder: (BuildContext context, int index){
-            var memo = index /*vm.memo[index]*/;
-            return Card(
-              child: ListTile(
-                leading: FlutterLogo(),
-                title: Text('One-line with both widgets'),
-                trailing: Icon(Icons.more_vert),
+    return Scaffold(
+      appBar: AppBar(
+        ///AppBarにTextFieldを設置することで，検索バーを作れる
+        title: Text(
+          'メモ一覧'
+        )
+      ),
+      backgroundColor: Color(0xffF2F2F2),
+      body: FutureBuilder(
+          future:queryDB('memo'),
+          builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+            if (snapshot.hasData) {
+              return ListView.builder(
+                itemCount: snapshot.data.length,//db.query('memo').length /*vm.memos.length*/
+                itemBuilder: (BuildContext context, int index){
+                  return Card(
+                      child: ListTile(
+                        leading: FlutterLogo(),
+                        title: Text('One-line with both widgets'),
+                        trailing: Icon(Icons.more_vert),
+                      )
+                  );
+                },
+              );
+            }else{
+              return Center(
+                  child: CircularProgressIndicator()
+              );
+            }
+            },
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        // メモ登録画面に遷移する
+        onPressed:() {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                settings: RouteSettings(name: '/ui.memo_detail'),
+                builder: (context) => MemoRegister(),
               ),
-            );
-          },
-        ),
-        floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.add),
-          // メモ登録画面に遷移する
-          onPressed:() {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  settings: RouteSettings(name: '/ui.memo_detail'),
-                  builder: (context) => MemoDetail(),
-                ),
-            );
-          }
-        ),
+          );
+          //TODO:ここでsetState()すればいい説
+        }
       ),
     );
   }
