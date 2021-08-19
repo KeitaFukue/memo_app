@@ -4,6 +4,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 class MemoRegister extends StatelessWidget{
+
   String titleText = '';
   String memoText = '';
 
@@ -55,6 +56,9 @@ class MemoRegister extends StatelessWidget{
                 decoration: const InputDecoration(
                   labelText: 'title',
                 ),
+                onChanged: (text){
+                  titleText = text;
+                },
               ),
               Container(
                 padding: EdgeInsets.only(top:20),
@@ -64,6 +68,9 @@ class MemoRegister extends StatelessWidget{
                   ),
                   maxLines: null,
                   minLines: 5,
+                  onChanged: (text){
+                    memoText = text;
+                  },
                 ),
               ),
               Container(

@@ -48,7 +48,8 @@ class _MemoListState extends State<MemoList> {
                   return Card(
                       child: ListTile(
                         leading: FlutterLogo(),
-                        title: Text('One-line with both widgets'),
+                        title: Text(snapshot.data[index]['title']),
+                        subtitle: Text(snapshot.data[index]['memo']),
                         trailing: Icon(Icons.more_vert),
                       )
                   );
