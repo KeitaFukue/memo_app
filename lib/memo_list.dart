@@ -5,22 +5,27 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'memo_register.dart';
 
-class MemoList extends StatelessWidget{
+class MemoList extends StatefulWidget{
 
-Future<List> queryDB(tableName) async {//必ずopenDatabaseをしてDatabaseインスタンスを作る。そのインスタンスでqueryなどをする
-  final db = await openDatabase(
-      join(await getDatabasesPath(), 'memo.db'),
-      version: 1,
-      onCreate: (db, version){
-        return db.execute(''
-            'CREATE TABLE memo(title INTEGER, memo TEXT)'
-        );
-      }
-  );
-
-  final table = await db.query(tableName);//dbがDatabaseでなくfutureだとエラーがでる
-  return table;
+  @override
+  _MemoListState createState() => _MemoListState();
 }
+
+class _MemoListState extends State<MemoList> {
+  Future<List> queryDB(tableName) async {//必ずopenDatabaseをしてDatabaseインスタンスを作る。そのインスタンスでqueryなどをする
+    final db = await openDatabase(
+        join(await getDatabasesPath(), 'memo.db'),
+        version: 1,
+        onCreate: (db, version){
+          return db.execute(''
+              'CREATE TABLE memo(title TEXT, memo TEXT)'
+          );
+        }
+    );
+
+    final table = await db.query(tableName);//dbがDatabaseでなくfutureだとエラーがでる
+    return table;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,8 +64,8 @@ Future<List> queryDB(tableName) async {//必ずopenDatabaseをしてDatabaseイ�
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         // メモ登録画面に遷移する
-        onPressed:() {
-          Navigator.push(
+        onPressed:() async{
+          await Navigator.push(
               context,
               MaterialPageRoute(
                 settings: RouteSettings(name: '/ui.memo_detail'),
@@ -68,6 +73,7 @@ Future<List> queryDB(tableName) async {//必ずopenDatabaseをしてDatabaseイ�
               ),
           );
           //TODO:ここでsetState()すればいい説
+          setState((){});
         }
       ),
     );
